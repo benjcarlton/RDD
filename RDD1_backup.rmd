@@ -5,4 +5,52 @@ date: "2/25/2021"
 output: pdf_document
 ---
 
+g```r{}
+
+library(tidyverse)
+library(rdrobust)
+library(rdd)
+library(jtools)
+library(readxl)
+library(ggplot2)
+
+hansen <- read_excel("C:/Users/benca/Desktop/hansen_dwi.xlsx")
+dui <- hansen_dwi %>% 
+  filter(hansen_dwi$bac1 >=.08)
+
+
+```
+
+## 1
+
+
+## 2
+
+Hansen's paper seeks to look at trends
+
+## 4
+```{r}
+hansen$dui <- ifelse(hansen$bac1 >= 0.08, 1, 0)
+ggplot(hansen) + geom_histogram(aes(x=bac1), bins = 1000)+
+stat_bin(binwidth = .001, aes(x=bac1)) + geom_vline(aes(xintercept = 0.08, color = "Red"))
+
+```
+
+## 5
+
+```{r}
+col1 <- RDestimate(recidivism ~ bac1 | male + acc + white + + aged + dui + bac1*dui, data = hansen, cutpoint = 0.08, bw = 0.025, kernel = "rectangular")
+
+col1 <- RDestimate(recidivism ~ bac1 | male + acc + white + aged, data = hansen, subset = NULL, cutpoint = 0.08, bw = 0.002,
+  kernel = "rectangular", se.type = "HC1", cluster = NULL,
+  verbose = FALSE, model = FALSE, frame = FALSE)
+
+data.frame(recidivism = col1$est[1])
+density(hansen$recidivism)
+plot(density(hansen$recidivism))
+```
+
+
+
+
 

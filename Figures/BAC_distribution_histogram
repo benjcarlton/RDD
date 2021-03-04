@@ -1,1 +1,23 @@
+R-code nessary for setup:
 
+```{r}
+library(tidyverse)
+library(rdrobust)
+library(rdd)
+library(jtools)
+library(readxl)
+library(ggplot2)
+library(stargazer)
+
+hansen <- read_excel("C:/Users/benca/Desktop/hansen_dwi.xlsx")
+dui <- hansen %>% 
+  filter(hansen$bac1 >=.08)
+```
+
+Histogram:
+
+```{r}
+hansen$dui <- ifelse(hansen$bac1 >= 0.08, 1, 0)
+ggplot(hansen) + geom_histogram(aes(x=bac1), bins = 1000)+
+stat_bin(binwidth = .001, aes(x=bac1)) + geom_vline(aes(xintercept = 0.08, color = "Red"))
+```

@@ -5,7 +5,7 @@ date: "2/25/2021"
 output: pdf_document
 ---
 
-g```r{}
+```{r}
 
 library(tidyverse)
 library(rdrobust)
@@ -13,30 +13,108 @@ library(rdd)
 library(jtools)
 library(readxl)
 library(ggplot2)
+library(stargazer)
 
 hansen <- read_excel("C:/Users/benca/Desktop/hansen_dwi.xlsx")
-dui <- hansen_dwi %>% 
-  filter(hansen_dwi$bac1 >=.08)
+dui <- hansen %>% 
+  filter(hansen$bac1 >=.08)
 
 
 ```
 
 ## 1
 
+https://github.com/benjcarlton/RDD
 
 ## 2
 
-Hansen's paper seeks to look at trends
+Hansen's paper's objective is to explore the causal effect of harsher DUI penalties on the likelihood of repeat DUI offenses. 
+Using Washington State's administrative records on DUI stops from 1997 to 2011 and filters out instances of stops involving persons
+under the age of 21. With this data, he explores the likelihood of repeat offenses (recidivism) and analyzes the  relationship 
+between BAC at the time of the stop and characteristics that the people in question cannot change like gender, age, and race. 
+He establishes BAC cutoff points of .08 (DUI) and .15 (aggrevated DUI) to see how these penalties correlate with repeat offenses 
+within 4 years of the initial stop. He finds that
+
+## 3
+
+R-code used: 
 
 ## 4
+
+Given that blood-alcohol-content is something that a person can directly control (that is people choose their amount of alcohol consumption), 
+Hansen worries about using BAC at the time of the traffic stop since people in the dataset may have some level of control that could skew
+his findings. To test if this is the case, he plots the BAC levels of those at the time of the initial stop. If manipulation is occurring,
+one would expect to see a "bunching" (disproportionate grouping) of observations around key cutoff points (BAC of .08 and BAC of .15). 
+Looking at BAC levels of the observations in a histogram format shows the following:
+
 ```{r}
 hansen$dui <- ifelse(hansen$bac1 >= 0.08, 1, 0)
 ggplot(hansen) + geom_histogram(aes(x=bac1), bins = 1000)+
 stat_bin(binwidth = .001, aes(x=bac1)) + geom_vline(aes(xintercept = 0.08, color = "Red"))
 
 ```
+While there are some regions of the graph that appear to be "bunched together", the overall curvature is relatively smooth and
+does not suggest the kind of self-selection right before the .08 and .15 cutoff points that we would expect to see if people were
+able to exercise some level of control over their BAC at the time of the stop.
 
 ## 5
+### Panel A
+```{r}
+rdplot(hansen$recidivism, hansen$bac1, p =1, c = 0.08, binselect = "es", title = "Recidivism & BAC", y.label = 'Recidivism', x.label = 'BAC',
+kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0,0.2))
+```
+
+### Panel B
+```{r}
+rdplot(hansen$male, hansen$bac1, p =1, c = 0.08, title = "Male & BAC", y.label = 'Male', x.label = 'BAC',
+kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.65,0.9))
+```
+
+### Panel C
+```{r}
+rdplot(hansen$white, hansen$bac1, p =1, c = 0.08, title = "White & BAC", y.label = 'White', x.label = 'BAC',
+kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.7,0.9))
+```
+
+### Panel D
+```{r}
+rdplot(hansen$aged, hansen$bac1, p =1, c = 0.08, title = "Age & BAC", y.label = 'aged', x.label = 'BAC',
+kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0,0.95))
+```
+
+## 6
+```{r}
+model_a <- lm(male ~ dui + bac1 + dui*bac1, data = hansen)
+summary(model_a)
+
+model_b <- lm(aged ~ dui + bac1 + dui*bac1, data = hansen)
+summary(model_b)
+
+model_c <- lm(white ~ dui + bac1 + dui*bac1, data = hansen)
+summary(model_c)
+
+model_d = lm(acc ~ dui + bac1 + dui*bac1, data = hansen)
+summary(model_d)
+
+
+stargazer(model_a, model_b, model_c,
+  title="Testing the Gazing of Stars",
+  notes.label="Significance Levels",
+  type = "HTML",
+  out="https://github.com/benjcarlton/RDD/tree/main/Figures"
+  )
+```
+
+```{r}
+predfitMale = predict(Male, hansen)
+plot(predfitMale ~ bac1, data = hansen, ylim=range(0.6,1))
+
+predifWhite = predict(White, hansen)
+plot(predifWhite ~ bac1, data = hansen, ylim=range(0.7,1))
+```
+
+## 7
+
 
 ```{r}
 col1 <- RDestimate(recidivism ~ bac1 | male + acc + white + + aged + dui + bac1*dui, data = hansen, cutpoint = 0.08, bw = 0.025, kernel = "rectangular")
@@ -48,6 +126,14 @@ col1 <- RDestimate(recidivism ~ bac1 | male + acc + white + aged, data = hansen,
 data.frame(recidivism = col1$est[1])
 density(hansen$recidivism)
 plot(density(hansen$recidivism))
+```
+
+## 8
+
+
+
+## 9 
+This assignment was a very opening for me. 
 ```
 
 

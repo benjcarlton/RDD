@@ -1,13 +1,40 @@
 Necessary R-code for setup:
 
+```{r}
+library(tidyverse)
+library(rdrobust)
+library(rdd)
+library(jtools)
+library(readxl)
+library(ggplot2)
+library(stargazer)
 
+hansen <- read_excel("C:/Users/benca/Desktop/hansen_dwi.xlsx")
+dui <- hansen %>% 
+  filter(hansen$bac1 >=.08)
+```
 
+### Panel A
+```{r}
+rdplot(hansen$recidivism, hansen$bac1, p =1, c = 0.08, title = "Recidivism & BAC", y.label = 'Recidivism', x.label = 'BAC',
+kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0,0.2))
+```
 
-## A
+### Panel B
+```{r}
+rdplot(hansen$male, hansen$bac1, p =1, c = 0.08, title = "Male & BAC", y.label = 'Male', x.label = 'BAC',
+kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.65,0.9))
+```
 
-## B
+### Panel C
+```{r}
+rdplot(hansen$white, hansen$bac1, p =1, c = 0.08, title = "White & BAC", y.label = 'White', x.label = 'BAC',
+kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.7,0.9))
+```
 
-## C
-
-## D
+### Panel D
+```{r}
+rdplot(hansen$aged, hansen$bac1, p =1, c = 0.08, title = "Age & BAC", y.label = 'aged', x.label = 'BAC',
+kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0,0.95))
+```
 

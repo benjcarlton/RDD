@@ -1,0 +1,17 @@
+Git related:
+Ran into several issues pushing the committed changes on the main R-file to the repository. These ranged from the remote being ahead of main to
+"several simultaneous pushes to the repository" blocking any pushes that I would attempt.
+
+General issues related to me being a Github novice:
+setting up the inital connection between the remote and main branch took an embarrassingly long time to get established, leaving gaps in version updates
+Not wanting to have a documented list of my errors, I waiting to start uploading code until I had a good amount of it working
+
+R-related:
+Version of R that I initially used was not compatible with the version of the libraries that I was using, leading to delays in initial file uploads
+Figuring out how things tied together in some of the functions took longer than expected
+Getting a widely-used package to make tables took up the bulk of the learning, and is still not perfected
+
+Lessons learned:
+take the time to ensure that everything is set up before starting project work
+find, collect, and save code for commonly used tables, functions, and graphs
+double check everything, sleep on it and double check it all again

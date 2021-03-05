@@ -73,7 +73,7 @@ summary(model_d)
 
 
 stargazer(model_a, model_b, model_c, model_d,
-  type = "HTML",
+  type = "text",
   )
 ```
 
@@ -81,22 +81,22 @@ stargazer(model_a, model_b, model_c, model_d,
 
 ### Panel A
 ```{r}
-rdplot(hansen$recidivism, hansen$bac1, p =1, c = 0.08, title = "Recidivism & BAC", y.label = 'Recidivism', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0,0.2))
+rdplot(hansen$acc, hansen$bac1, p = 2, c = 0.08, title = "Accidents & BAC", y.label = 'Accident', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.25), y.lim = c(0,0.2))
 ```
 
 ### Panel B
 ```{r}
-rdplot(hansen$male, hansen$bac1, p =1, c = 0.08, title = "Male & BAC", y.label = 'Male', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.65,0.9))
+rdplot(hansen$male, hansen$bac1, p =1, c = 0.08, title = "Male & BAC", y.label = 'Male', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.74,0.82))
 ```
 
 ### Panel C
 ```{r}
-rdplot(hansen$aged, hansen$bac1, p =1, c = 0.08, title = "Age & BAC", y.label = 'Age', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(30,45))
+rdplot(hansen$aged, hansen$bac1, p =2, c = 0.08, title = "Age & BAC", y.label = 'Age', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(34,38))
 ```
 
 ### Panel D
 ```{r}
-rdplot(hansen$white, hansen$bac1, p =1, c = 0.08, title = "White & BAC", y.label = 'White', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.7,0.9))
+rdplot(hansen$white, hansen$bac1, p =1, c = 0.08, title = "White & BAC", y.label = 'White', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.8,0.9))
 ```
 
 

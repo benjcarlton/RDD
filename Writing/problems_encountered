@@ -1,6 +1,16 @@
 Git related:
+
 Ran into several issues pushing the committed changes on the main R-file to the repository. These ranged from the remote being ahead of main to
-"several simultaneous pushes to the repository" blocking any pushes that I would attempt.
+"several simultaneous pushes to the repository" blocking any pushes that I would attempt, to the most common error: 
+>>> C:/Program Files/Git/bin/git.exe push origin HEAD:refs/heads/main
+To https://github.com/benjcarlton/RDD
+ ! [rejected]        HEAD -> main (fetch first)
+error: failed to push some refs to 'https://github.com/benjcarlton/RDD'
+hint: Updates were rejected because the remote contains work that you do
+hint: not have locally. This is usually caused by another repository pushing
+hint: to the same ref. You may want to first integrate the remote changes
+hint: (e.g., 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details..
 
 General issues related to me being a Github novice:
 setting up the inital connection between the remote and main branch took an embarrassingly long time to get established, leaving gaps in version updates

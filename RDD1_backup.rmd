@@ -97,11 +97,8 @@ model_d = lm(acc ~ dui + bac1 + dui*bac1, data = hansen)
 summary(model_d)
 
 
-stargazer(model_a, model_b, model_c,
-  title="Testing the Gazing of Stars",
-  notes.label="Significance Levels",
+stargazer(model_a, model_b, model_c, model_d,
   type = "HTML",
-  out="https://github.com/benjcarlton/RDD/tree/main/Figures"
   )
 ```
 
@@ -130,6 +127,13 @@ plot(density(hansen$recidivism))
 
 ## 8
 
+
+```{r}
+ggplot(var, aes(bac1, recidivism)) + geom_point(aes(x = bac1, y = recidivism), data = hansen)
+  +geom_vline(xintercept = 0.08, colour = "blue", linetype = 2) +
+  stat_smooth(aes(bac1, recidivism, group = gg_group2), method = "lm", formula = y ~ x + I(x^2))
+  +labels(x = "BAC", title = "All Ofenders")
+```
 
 
 ## 9 

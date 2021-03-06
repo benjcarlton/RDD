@@ -1,17 +1,17 @@
 ---
 title: "RDD Assignment 1"
 author: "Ben Carlton"
-date: "2/25/2021"
+date: "3/5/2021"
 output: pdf_document
 ---
 
 ```{r}
-
 library(tidyverse)
 library(rdrobust)
 library(rdd)
 library(rddensity)
 library(jtools)
+library(dplyr)
 library(readxl)
 library(ggplot2)
 library(stargazer)
@@ -19,6 +19,9 @@ library(stargazer)
 hansen <- read_excel("C:/Users/benca/Desktop/hansen_dwi.xlsx")
 hansen$dui <- ifelse(hansen$bac1 >= 0.08, 1, 0)
 
+bac4 <- hansen%>% filter( between(bac1, 0, .15) )
+bac5 <- hansen%>% filter( between(bac1, .03, .13) )
+bac6 <- hansen%>% filter( between(bac1, 0.55, .105) )
 
 ```
 
@@ -28,7 +31,7 @@ https://github.com/benjcarlton/RDD
 
 ## 2
 
-Hansen's paper's objective is to explore the causal effect of harsher DUI penalties on the likelihood of repeat DUI offenses. Using Washington State's administrative records on DUI stops from 1997 to 2011 and filters out instances of stops involving persons under the age of 21. With this data, he explores the likelihood of repeat offenses (recidivism) and analyzes the relationship between BAC at the time of the stop and characteristics that the people in question cannot change like gender, age, and race. He establishes BAC cutoff points of .08 (DUI) and .15 (aggrevated DUI) to see how these penalties correlate with repeat offenses within 4 years of the initial stop. He finds that
+Hansen's paper's objective is to explore the causal effect of harsher DUI penalties on the likelihood of repeat DUI offenses. Using Washington State's administrative records on DUI stops from 1997 to 2011 and filters out instances of stops involving persons under the age of 21. With this data, he explores the likelihood of repeat offenses (recidivism) and analyzes the relationship between BAC at the time of the stop and characteristics that the people in question cannot change like gender, age, and race. He establishes BAC cutoff points of .08 (DUI) and .15 (aggrevated DUI) to see how these penalties correlate with repeat offenses within 4 years of the initial stop. Utilizing a variety of statistical checks lHe finds evidence that 10 percent increase in sanctions and punishments is associated with a 2.3 percent decline in drunk driving. and found that having a BAC over the 0.15 limit is associated with an additional 1 percentage point decline in repeat drunk driving.
 
 ## 3
 
@@ -45,6 +48,7 @@ ggplot(hansen) + geom_histogram(aes(x=bac1), bins = 1000)+
 stat_bin(binwidth = .001, aes(x=bac1)) + geom_vline(aes(xintercept = 0.08, color = "Red"))
 
 ```
+
 While there are some regions of the graph that appear to be "bunched together", the overall curvature is relatively smooth and does not suggest the kind of self-selection right before the .08 and .15 cutoff points that we would expect to see if people were able to exercise some level of control over their BAC at the time of the stop. Using the rddensity command in R shows the
 following:
 
@@ -60,77 +64,95 @@ the two lines is within the interval shown at the cutoff point, so there does no
 
 ```{r}
 model_a <- lm(male ~ dui + bac1 + dui*bac1, data = hansen)
-summary(model_a)
-
-model_b <- lm(aged ~ dui + bac1 + dui*bac1, data = hansen)
-summary(model_b)
-
-model_c <- lm(white ~ dui + bac1 + dui*bac1, data = hansen)
-summary(model_c)
-
+model_b <- lm(white ~ dui + bac1 + dui*bac1, data = hansen)
+model_c <- lm(aged ~ dui + bac1 + dui*bac1, data = hansen)
 model_d = lm(acc ~ dui + bac1 + dui*bac1, data = hansen)
-summary(model_d)
-
 
 stargazer(model_a, model_b, model_c, model_d,
-  type = "text",
+  title="Driver demographic characteristics",
+  dep.var.caption ="DUI, BAC, Interaction",
+  covariate.labels = c("DUI", "BAC", "Interaction", "Constant"),
+  notes.label="Significance Levels",
+  type = "text"
   )
 ```
 
+Thinking about the methodology used by Hansen in dettermining which data to use, as well as the coefficients generated from the table above leads me to believe that is minimal bias within the covariates used as controls for this study. Hansen's use of traffic stops, many resulting in BACs well below the DUI threshold, indicates to me that the dataset is more likely than not comprised of a random sample across all of the "control" attributes.
+
 ## 6
 
-### Panel A
+### Panel A Linear
 ```{r}
-rdplot(hansen$acc, hansen$bac1, p = 2, c = 0.08, title = "Accidents & BAC", y.label = 'Accident', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.25), y.lim = c(0,0.2))
+rdplot(hansen$acc, hansen$bac1, p = 1, c = 0.08, title = "Panel A. Accidents at scene",  x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.25), y.lim = c(0,0.35))
 ```
 
-### Panel B
+### Panel A Quadratic fit
 ```{r}
-rdplot(hansen$male, hansen$bac1, p =1, c = 0.08, title = "Male & BAC", y.label = 'Male', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.74,0.82))
+rdplot(hansen$acc, hansen$bac1, p = 2, c = 0.08, ci = 95, title = "Panel A. Accidents at scene", x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.25), y.lim = c(0,0.4))
+```
+While not an exact match, I do think that I was able to come pretty close to replicating Panel A. I am working on figuring out how to group several of these types of plots together in the format that Hansen found
+
+### Panel B Linear
+```{r}
+rdplot(hansen$male, hansen$bac1, p =1, c = 0.08, title = "Panel B. Male", x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.6,0.9))
+```
+While the axis min&max are not the same, I believe it is due to: 1. Not having the entire dataset that he used; and 2. the number of bins that Hansen used in his paper being different from the number generated in Panel B.
+
+### Panel B Quandratic fit
+```{r}
+rdplot(hansen$male, hansen$bac1, p =2, c = 0.08, title = "Panel B. Male", x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.6,0.9))
 ```
 
-### Panel C
+### Panel C Linear
 ```{r}
-rdplot(hansen$aged, hansen$bac1, p =2, c = 0.08, title = "Age & BAC", y.label = 'Age', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(34,38))
+rdplot(hansen$aged, hansen$bac1, p =1, c = 0.08, title = "Panel C. Age", x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(30,45))
 ```
+
+### Panel C Quadratic fit
+```{r}
+rdplot(hansen$aged, hansen$bac1, p =2, c = 0.08, ci = 95, title = "Panel C. Age", x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(30,45))
+```
+
+I have not found a way to filter the aged data to convert it into a decimal like Hansen used in his paper. In the spirit of the assignment, I wanted to try this out on my own using R rather than using Excel/Access to manipulate the original data.
 
 ### Panel D
 ```{r}
-rdplot(hansen$white, hansen$bac1, p =1, c = 0.08, title = "White & BAC", y.label = 'White', x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.8,0.9))
+rdplot(hansen$white, hansen$bac1, p =1, c = 0.08, title = "Panel D. White", x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.2), y.lim = c(0.8,0.9))
 ```
 
+I find a larger differential at the cutoff point than Hansen showed in his paper. I am not entirely sure if this is due to how the bins were set in my code versus his methodology or not, but I will continue to work on figuring out how to customize panels like these. 
 
 ## 7
 
-
 ```{r}
-col1 <- RDestimate(recidivism ~ bac1 | male + acc + white + + aged + dui + bac1*dui, data = hansen, cutpoint = 0.08, bw = 0.025, kernel = "rectangular")
+model_1 <- lm(recidivism ~ dui + bac1, data = hansen)
+model_2 <- lm(recidivism ~ dui + bac1 + dui*bac1, data = hansen)
+model_3 <- lm(recidivism ~ dui + bac1 + I(bac1^2), data = hansen)
+model_d = lm(acc ~ dui + bac1 + dui*bac1, data = hansen)
 
-col1 <- RDestimate(recidivism ~ bac1 | male + acc + white + aged, data = hansen, subset = NULL, cutpoint = 0.08, bw = 0.002,
-  kernel = "rectangular", se.type = "HC1", cluster = NULL,
-  verbose = FALSE, model = FALSE, frame = FALSE)
-
-data.frame(recidivism = col1$est[1])
-density(hansen$recidivism)
-plot(density(hansen$recidivism))
+stargazer(model_1, model_2, model_3,
+  title="Driver demographic characteristics",
+  dep.var.caption ="Recidivism",
+  covariate.labels = c("DUI", "BAC", "Interaction", "Quadratic"),
+  notes.label="Significance Levels",
+  type = "text"
+  )
 ```
 
 ## 8
 
+```{r}
+rdplot(hansen$recidivism, hansen$bac1, p = 1, c = 0.08, title = "Panel A. All offenders - linear", x.label = 'BAC', kernel = "triangular", x.lim = c(.0,0.14), y.lim = c(0.06,0.18))
+```
 
 ```{r}
-ggplot(var, aes(bac1, recidivism)) + geom_point(aes(x = bac1, y = recidivism), data = hansen)
-  +geom_vline(xintercept = 0.08, colour = "blue", linetype = 2) +
-  stat_smooth(aes(bac1, recidivism, group = gg_group2), method = "lm", formula = y ~ x + I(x^2))
-  +labels(x = "BAC", title = "All Ofenders")
+rdplot(hansen$recidivism, hansen$bac1, p = 2, c = 0.08, title = "Panel A. All offenders - quadratic", x.label = 'BAC', kernel = "triangular", x.lim = c(0,0.15), y.lim = c(0.06,0.18))
 ```
 
 
 ## 9 
-This assignment was a very opening for me. 
+
+This assignment was very eye-opening for me. I had always figured that software packages like R were tailored to lowering the learning curve for getting research together in standard formats. Also seeing the steps that are required to ensure that things that are usually assumed to be true like unbiased sampling and randomized controls are actually fit the assumptions made. My hypothesis going into this assignment was that there would be a causal relationship between penalties and likelihood of re-offending. As someone who has himself gotten a DUI and has worked with alcoholics for years it is my experience that once the threat of punishment becomes a real factor with real consequences, some people will immediately change their behavior. 
+
+Going back to Hansen's work, I agree with his findings of a 2% drop in 4 year recidivism with harsher DUI punishments. Going step by step through this process, the methodology he employed was thorough in ensuring that the factors he employed allowed for his analysis on recidivism to likely be unbiased. The findings of decreases in crime when the costs of committing those crimes (in this case harsher punishments) are perfectly in line with the cost-benefit analysis that we all employ. I also appreciate the depth of his breakdowns (prior offenses at time of first DUI for example) and the consideration of other factors like addiction and mandated treatment methods for those convicted.
 ```
-
-
-
-
-
